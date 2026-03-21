@@ -23,7 +23,10 @@ export class IndyVdrPoolService {
   private logger: Logger
   private indyVdrModuleConfig: IndyVdrModuleConfig
 
-  public constructor(@inject(InjectionSymbols.Logger) logger: Logger, indyVdrModuleConfig: IndyVdrModuleConfig) {
+  public constructor(
+    @inject(InjectionSymbols.Logger) logger: Logger,
+    @inject(IndyVdrModuleConfig) indyVdrModuleConfig: IndyVdrModuleConfig
+  ) {
     this.logger = logger
     this.indyVdrModuleConfig = indyVdrModuleConfig
 

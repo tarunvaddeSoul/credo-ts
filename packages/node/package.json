@@ -1,8 +1,14 @@
 {
   "name": "@credo-ts/node",
+  "main": "./build/index.mjs",
+  "types": "./build/index.d.mts",
   "exports": {
-    "cli": "./build/index.mjs",
-    "import": "./src/index.ts"
+    ".": {
+      "cli": "./build/index.mjs",
+      "import": "./build/index.mjs",
+      "require": "./build/index.mjs",
+      "default": "./build/index.mjs"
+    }
   },
   "version": "0.6.3",
   "files": [
