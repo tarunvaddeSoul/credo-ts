@@ -2,6 +2,7 @@ packages:
   - packages/*
   - demo
   - demo-openid
+  - demo-group-chat
   - samples/*
 
 catalog:

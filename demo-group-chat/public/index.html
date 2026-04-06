@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIDComm Group Chat</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; height: 100vh; display: flex; flex-direction: column; }
+
+    /* Header */
+    .header { background: #1a1a2e; padding: 12px 20px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #333; }
+    .header h1 { font-size: 16px; font-weight: 600; color: #7c83ff; }
+    .status { display: flex; align-items: center; gap: 6px; font-size: 13px; margin-left: auto; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+    .status-dot.connected { background: #4caf50; }
+    .agent-label { background: #333; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; text-transform: capitalize; }
+    .agent-label.alice { color: #ff6b9d; }
+    .agent-label.bob { color: #4ecdc4; }
+    .agent-label.carol { color: #ffe66d; }
+
+    /* Main layout */
+    .main { display: flex; flex: 1; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; background: #141422; border-right: 1px solid #333; display: flex; flex-direction: column; }
+    .sidebar-header { padding: 12px 16px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-header h2 { font-size: 14px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+    .sidebar-header button { background: #7c83ff; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .sidebar-header button:hover { background: #6b72e8; }
+    .sidebar-header button:disabled { background: #444; cursor: not-allowed; }
+    .group-list { flex: 1; overflow-y: auto; }
+    .group-item { padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #1e1e36; }
+    .group-item:hover { background: #1e1e36; }
+    .group-item.active { background: #252547; border-left: 3px solid #7c83ff; }
+    .group-item .name { font-size: 14px; font-weight: 500; }
+    .group-item .meta { font-size: 11px; color: #666; margin-top: 4px; }
+
+    /* Chat area */
+    .chat { flex: 1; display: flex; flex-direction: column; }
+    .chat-header { padding: 12px 20px; border-bottom: 1px solid #333; background: #141422; }
+    .chat-header h2 { font-size: 15px; }
+    .chat-header .members { font-size: 12px; color: #666; margin-top: 2px; }
+    .messages { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
+    .message { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.4; }
+    .message.mine { align-self: flex-end; background: #7c83ff; color: white; border-bottom-right-radius: 4px; }
+    .message.theirs { align-self: flex-start; background: #1e1e36; border-bottom-left-radius: 4px; }
+    .message .sender { font-size: 11px; font-weight: 600; margin-bottom: 4px; opacity: 0.8; }
+    .message .time { font-size: 10px; opacity: 0.5; margin-top: 4px; text-align: right; }
+
+    /* Input */
+    .input-area { padding: 12px 20px; border-top: 1px solid #333; background: #141422; display: flex; gap: 8px; }
+    .input-area input { flex: 1; background: #1e1e36; border: 1px solid #333; color: #e0e0e0; padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; }
+    .input-area input:focus { border-color: #7c83ff; }
+    .input-area button { background: #7c83ff; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .input-area button:hover { background: #6b72e8; }
+
+    /* Empty state */
+    .empty-state { display: flex; align-items: center; justify-content: center; flex: 1; color: #555; font-size: 14px; }
+
+    /* Notification toast */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; padding: 10px 16px; border-radius: 8px; font-size: 13px; display: none; z-index: 100; border-left: 3px solid #7c83ff; }
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>DIDComm v2 Group Chat</h1>
+    <span class="agent-label" id="agentLabel">--</span>
+    <div class="status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting...</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2>Groups</h2>
+        <button id="createGroupBtn" disabled>+ New Group</button>
+      </div>
+      <div class="group-list" id="groupList"></div>
+    </div>
+
+    <div class="chat">
+      <div class="chat-header" id="chatHeader" style="display:none">
+        <h2 id="chatGroupName"></h2>
+        <div class="members" id="chatMembers"></div>
+      </div>
+      <div class="messages" id="messagesContainer">
+        <div class="empty-state" id="emptyState">Select or create a group to start chatting</div>
+      </div>
+      <div class="input-area" id="inputArea" style="display:none">
+        <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
+        <button id="sendBtn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ─── State ─────────────────────────────────────────────────────
+    const agentName = new URLSearchParams(location.search).get('agent') || 'alice'
+    let myDid = ''
+    let selectedGroupId = null
+    const groups = new Map()          // groupId -> group info
+    const messagesByGroup = new Map() // groupId -> messages[]
+    let ws = null
+
+    // ─── DOM refs ──────────────────────────────────────────────────
+    const $ = (id) => document.getElementById(id)
+    const agentLabel = $('agentLabel')
+    const statusDot = $('statusDot')
+    const statusText = $('statusText')
+    const createGroupBtn = $('createGroupBtn')
+    const groupList = $('groupList')
+    const chatHeader = $('chatHeader')
+    const chatGroupName = $('chatGroupName')
+    const chatMembers = $('chatMembers')
+    const messagesContainer = $('messagesContainer')
+    const emptyState = $('emptyState')
+    const inputArea = $('inputArea')
+    const messageInput = $('messageInput')
+    const sendBtn = $('sendBtn')
+    const toast = $('toast')
+
+    // ─── Init ──────────────────────────────────────────────────────
+    agentLabel.textContent = agentName.charAt(0).toUpperCase() + agentName.slice(1)
+    agentLabel.classList.add(agentName)
+    document.title = `${agentLabel.textContent} - DIDComm Group Chat`
+
+    // Only Alice can create groups
+    if (agentName === 'alice') {
+      createGroupBtn.style.display = ''
+    } else {
+      createGroupBtn.style.display = 'none'
+    }
+
+    // ─── WebSocket ─────────────────────────────────────────────────
+    function connect() {
+      ws = new WebSocket(`ws://${location.host}`)
+
+      ws.onopen = () => {
+        statusDot.classList.add('connected')
+        statusText.textContent = 'Connected'
+        ws.send(JSON.stringify({ type: 'login', agent: agentName }))
+      }
+
+      ws.onclose = () => {
+        statusDot.classList.remove('connected')
+        statusText.textContent = 'Disconnected'
+        setTimeout(connect, 2000)
+      }
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data)
+        handleServerMessage(msg)
+      }
+    }
+
+    function handleServerMessage(msg) {
+      switch (msg.type) {
+        case 'loggedIn':
+          myDid = msg.did
+          createGroupBtn.disabled = false
+          showToast(`Logged in as ${msg.agent}`)
+          break
+
+        case 'groups':
+          for (const g of msg.groups) {
+            groups.set(g.groupId, g)
+          }
+          renderGroups()
+          break
+
+        case 'groupCreated':
+          groups.set(msg.group.groupId, msg.group)
+          if (!messagesByGroup.has(msg.group.groupId)) {
+            messagesByGroup.set(msg.group.groupId, [])
+          }
+          renderGroups()
+          // Auto-select if first group
+          if (!selectedGroupId) {
+            selectGroup(msg.group.groupId)
+          }
+          showToast(`Group "${msg.group.name}" created`)
+          break
+
+        case 'messageReceived':
+          addMessage(msg.groupId, msg.message, false)
+          break
+
+        case 'messageSent':
+          addMessage(msg.groupId, msg.message, true)
+          break
+
+        case 'messages':
+          messagesByGroup.set(msg.groupId, msg.messages.map(m => ({
+            ...m,
+            isMine: m.senderDid === myDid
+          })))
+          if (selectedGroupId === msg.groupId) renderMessages()
+          break
+
+        case 'error':
+          showToast(`Error: ${msg.message}`)
+          break
+      }
+    }
+
+    // ─── Rendering ─────────────────────────────────────────────────
+    function didLabel(did) {
+      if (!did) return '?'
+      // Shorten did:peer:4zQm... to first 8 chars of the hash
+      const match = did.match(/did:peer:4(z[A-Za-z0-9]{6})/)
+      return match ? match[1] : did.slice(-8)
+    }
+
+    function memberLabel(did) {
+      if (did === myDid) return 'You'
+      // Try to identify by role
+      const group = selectedGroupId && groups.get(selectedGroupId)
+      if (group) {
+        const member = group.members.find(m => m.did === did)
+        if (member?.role === 'admin') return `Admin (${didLabel(did)})`
+      }
+      return didLabel(did)
+    }
+
+    function renderGroups() {
+      groupList.innerHTML = ''
+      for (const [gid, g] of groups) {
+        const div = document.createElement('div')
+        div.className = `group-item${gid === selectedGroupId ? ' active' : ''}`
+        div.innerHTML = `
+          <div class="name">${g.name || 'Unnamed Group'}</div>
+          <div class="meta">${g.members?.length || 0} members &middot; epoch ${g.epoch || 0}</div>
+        `
+        div.onclick = () => selectGroup(gid)
+        groupList.appendChild(div)
+      }
+    }
+
+    function renderMessages() {
+      const msgs = messagesByGroup.get(selectedGroupId) || []
+      if (msgs.length === 0) {
+        messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Say hello!</div>'
+        return
+      }
+      messagesContainer.innerHTML = ''
+      for (const m of msgs) {
+        const div = document.createElement('div')
+        div.className = `message ${m.isMine ? 'mine' : 'theirs'}`
+        const time = m.sentTime ? new Date(m.sentTime).toLocaleTimeString() : ''
+        div.innerHTML = `
+          ${!m.isMine ? `<div class="sender">${memberLabel(m.senderDid)}</div>` : ''}
+          <div>${escapeHtml(m.content)}</div>
+          <div class="time">${time}</div>
+        `
+        messagesContainer.appendChild(div)
+      }
+      messagesContainer.scrollTop = messagesContainer.scrollHeight
+    }
+
+    function selectGroup(groupId) {
+      selectedGroupId = groupId
+      const group = groups.get(groupId)
+      chatHeader.style.display = ''
+      chatGroupName.textContent = group?.name || 'Group'
+      chatMembers.textContent = `${group?.members?.length || 0} members`
+      inputArea.style.display = ''
+      emptyState.style.display = 'none'
+      renderGroups()
+
+      // Fetch messages
+      ws.send(JSON.stringify({ type: 'getMessages', groupId }))
+    }
+
+    function addMessage(groupId, message, isMine) {
+      if (!messagesByGroup.has(groupId)) {
+        messagesByGroup.set(groupId, [])
+      }
+      const msgs = messagesByGroup.get(groupId)
+      // Dedup by id
+      if (msgs.some(m => m.id === message.id)) return
+      msgs.push({ ...message, isMine })
+      if (selectedGroupId === groupId) {
+        renderMessages()
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div')
+      div.textContent = str
+      return div.innerHTML
+    }
+
+    function showToast(text) {
+      toast.textContent = text
+      toast.classList.add('show')
+      setTimeout(() => toast.classList.remove('show'), 3000)
+    }
+
+    // ─── Actions ───────────────────────────────────────────────────
+    createGroupBtn.onclick = () => {
+      const name = prompt('Group name:', 'DIDComm Group Chat')
+      if (!name) return
+      ws.send(JSON.stringify({ type: 'createGroup', name }))
+    }
+
+    sendBtn.onclick = sendMessage
+    messageInput.onkeydown = (e) => {
+      if (e.key === 'Enter') sendMessage()
+    }
+
+    function sendMessage() {
+      const content = messageInput.value.trim()
+      if (!content || !selectedGroupId) return
+      ws.send(JSON.stringify({ type: 'sendMessage', groupId: selectedGroupId, content }))
+      messageInput.value = ''
+      messageInput.focus()
+    }
+
+    // ─── Start ─────────────────────────────────────────────────────
+    connect()
+  </script>
+</body>
+</html>

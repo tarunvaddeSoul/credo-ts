@@ -1,0 +1,21 @@
+{
+  "name": "demo-group-chat",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite-node server.ts"
+  },
+  "dependencies": {
+    "@credo-ts/askar": "workspace:*",
+    "@credo-ts/core": "workspace:*",
+    "@credo-ts/didcomm": "workspace:*",
+    "@credo-ts/node": "workspace:*",
+    "@openwallet-foundation/askar-nodejs": "catalog:",
+    "express": "catalog:",
+    "ws": "catalog:"
+  },
+  "devDependencies": {
+    "@types/express": "catalog:",
+    "@types/ws": "catalog:"
+  }
+}

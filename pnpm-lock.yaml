@@ -281,6 +281,37 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
 
+  demo-group-chat:
+    dependencies:
+      '@credo-ts/askar':
+        specifier: workspace:*
+        version: link:../packages/askar
+      '@credo-ts/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      '@credo-ts/didcomm':
+        specifier: workspace:*
+        version: link:../packages/didcomm
+      '@credo-ts/node':
+        specifier: workspace:*
+        version: link:../packages/node
+      '@openwallet-foundation/askar-nodejs':
+        specifier: 'catalog:'
+        version: 0.6.0
+      express:
+        specifier: 'catalog:'
+        version: 5.2.1
+      ws:
+        specifier: 'catalog:'
+        version: 8.19.0
+    devDependencies:
+      '@types/express':
+        specifier: 'catalog:'
+        version: 5.0.6
+      '@types/ws':
+        specifier: 'catalog:'
+        version: 8.18.1
+
   demo-openid:
     dependencies:
       '@hyperledger/anoncreds-nodejs':
