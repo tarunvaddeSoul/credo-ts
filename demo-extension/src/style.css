@@ -1,0 +1,176 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #1e3a8a;
+  color: white;
+}
+
+header h1 {
+  font-size: 20px;
+  margin: 0;
+}
+
+main {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.card h3 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+button {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+button.small {
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.row select {
+  flex: 1;
+}
+
+.row input {
+  flex: 2;
+}
+
+.records {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.records li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13px;
+}
+
+.records li:last-child {
+  border-bottom: none;
+}
+
+.records .empty {
+  color: #9ca3af;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.pill-gray {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.pill-green {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.pill-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.pill-yellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+#log {
+  background: #111827;
+  color: #d1d5db;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  max-height: 280px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: #6b7280;
+}

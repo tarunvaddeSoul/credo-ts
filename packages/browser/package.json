@@ -1,0 +1,43 @@
+{
+  "name": "@credo-ts/browser",
+  "exports": {
+    "cli": "./build/index.mjs",
+    "import": "./src/index.ts"
+  },
+  "version": "0.7.0",
+  "files": [
+    "build"
+  ],
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public",
+    "types": "./build/index.d.mts",
+    "module": "./build/index.mjs",
+    "exports": {
+      ".": "./build/index.mjs",
+      "./package.json": "./package.json"
+    }
+  },
+  "homepage": "https://github.com/openwallet-foundation/credo-ts/tree/main/packages/browser",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openwallet-foundation/credo-ts",
+    "directory": "packages/browser"
+  },
+  "scripts": {
+    "build": "tsdown --config-loader unrun",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@credo-ts/core": "workspace:*",
+    "@noble/ciphers": "^1.3.0",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
+    "events": "^3.3.0"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.0.0",
+    "reflect-metadata": "catalog:",
+    "typescript": "catalog:"
+  }
+}

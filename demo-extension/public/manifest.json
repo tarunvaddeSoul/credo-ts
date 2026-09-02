@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Credo SSI Wallet Demo",
+  "version": "1.0.0",
+  "description": "Demo SSI wallet running Credo (@credo-ts/browser) in a web extension",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  },
+  "host_permissions": ["http://*/*", "https://*/*"]
+}

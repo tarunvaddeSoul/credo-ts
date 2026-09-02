@@ -1,0 +1,41 @@
+{
+  "name": "@credo-ts/anoncreds-browser",
+  "exports": {
+    "cli": "./build/index.mjs",
+    "import": "./src/index.ts"
+  },
+  "version": "0.7.0",
+  "files": [
+    "build",
+    "wasm/pkg"
+  ],
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public",
+    "types": "./build/index.d.mts",
+    "module": "./build/index.mjs",
+    "exports": {
+      ".": "./build/index.mjs",
+      "./package.json": "./package.json"
+    }
+  },
+  "homepage": "https://github.com/openwallet-foundation/credo-ts/tree/main/packages/anoncreds-browser",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openwallet-foundation/credo-ts",
+    "directory": "packages/anoncreds-browser"
+  },
+  "scripts": {
+    "build": "tsdown --config-loader unrun",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@credo-ts/anoncreds": "workspace:*",
+    "@credo-ts/core": "workspace:*",
+    "@hyperledger/anoncreds-shared": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "fake-indexeddb": "^6.0.0"
+  }
+}

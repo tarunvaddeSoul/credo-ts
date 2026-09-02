@@ -17,3 +17,5 @@ cli-build
 test-logs
 testlogs
 tmp
+.claude/
+demo-extension/dist

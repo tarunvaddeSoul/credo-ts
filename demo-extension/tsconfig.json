@@ -1,0 +1,20 @@
+{
+  "extends": "../tsconfig.build.json",
+  "compilerOptions": {
+    "lib": ["es2022", "dom", "dom.iterable"],
+    "types": [],
+    "noEmit": true,
+    "baseUrl": ".",
+    // Check against built package types. The workspace dev exports point at the
+    // package sources, which are written against node lib types and conflict with dom.
+    "paths": {
+      "@credo-ts/core": ["../packages/core/build/index.d.mts"],
+      "@credo-ts/core/kms": ["../packages/core/build/modules/kms/index.d.mts"],
+      "@credo-ts/browser": ["../packages/browser/build/index.d.mts"],
+      "@credo-ts/didcomm": ["../packages/didcomm/build/index.d.mts"],
+      "@credo-ts/anoncreds": ["../packages/anoncreds/build/index.d.mts"],
+      "@credo-ts/anoncreds-browser": ["../packages/anoncreds-browser/build/index.d.mts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

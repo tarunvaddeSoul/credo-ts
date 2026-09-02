@@ -6,7 +6,13 @@
     "useIgnoreFile": true
   },
   "files": {
-    "maxSize": 10000000
+    "maxSize": 10000000,
+    "includes": [
+      "**",
+      "!!**/.claude",
+      "!packages/anoncreds-browser/wasm/pkg",
+      "!packages/anoncreds-browser/wasm/vendor"
+    ]
   },
   "formatter": {
     "indentStyle": "space",
@@ -38,7 +44,13 @@
       "allowComments": true
     }
   },
-  "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
   "linter": {
     "rules": {
       "style": {
@@ -48,7 +60,9 @@
         "noRestrictedGlobals": {
           "level": "error",
           "options": {
-            "deniedGlobals": { "Buffer": "Import Buffer from the '@credo-ts/core' package." }
+            "deniedGlobals": {
+              "Buffer": "Import Buffer from the '@credo-ts/core' package."
+            }
           }
         },
         "noRestrictedImports": {

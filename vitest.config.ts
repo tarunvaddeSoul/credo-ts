@@ -36,6 +36,7 @@ export default defineConfig({
           exclude: [
             '**/node_modules/**',
             '**/build/**',
+            '**/.claude/**',
             '**/*.e2e.{test,spec}.?(c|m)[jt]s?(x)',
             '**/*.conformance.{test,spec}.?(c|m)[jt]s?(x)',
           ],
@@ -47,7 +48,12 @@ export default defineConfig({
           name: 'e2e',
           include: ['**/*.e2e.{test,spec}.?(c|m)[jt]s?(x)'],
           // Ignore drizzle tests
-          exclude: ['**/node_modules/**', '**/build/**', '**/*.drizzle.e2e.{test,spec}.?(c|m)[jt]s?(x)'],
+          exclude: [
+            '**/node_modules/**',
+            '**/build/**',
+            '**/.claude/**',
+            '**/*.drizzle.e2e.{test,spec}.?(c|m)[jt]s?(x)',
+          ],
         },
       },
       {

@@ -1,0 +1,36 @@
+{
+  "name": "credo-demo-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/openwallet-foundation/credo-ts",
+    "directory": "demo-extension/"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "bundle": "vite build",
+    "dev": "vite",
+    "check": "tsc --noEmit",
+    "local-agent": "vitest run --config e2e/vitest.config.ts"
+  },
+  "dependencies": {
+    "@credo-ts/anoncreds": "workspace:*",
+    "@credo-ts/anoncreds-browser": "workspace:*",
+    "@credo-ts/browser": "workspace:*",
+    "@credo-ts/core": "workspace:*",
+    "@credo-ts/didcomm": "workspace:*",
+    "@hyperledger/anoncreds-shared": "catalog:",
+    "reflect-metadata": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vite": "^8.0.16",
+    "@credo-ts/node": "workspace:*",
+    "@hyperledger/anoncreds-nodejs": "catalog:",
+    "vitest": "catalog:",
+    "@credo-ts/askar": "workspace:*",
+    "@openwallet-foundation/askar-nodejs": "catalog:"
+  }
+}

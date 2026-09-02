@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Credo SSI Wallet</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Credo SSI Wallet</h1>
+      <span id="status" class="pill pill-gray">not initialized</span>
+    </header>
+
+    <main>
+      <section class="card" id="setup-card">
+        <h2>Wallet</h2>
+        <label for="mediator-url">Mediator invitation URL (optional, enables inbound DIDComm via mediator)</label>
+        <input id="mediator-url" type="text" placeholder="https://mediator.example.com?oob=..." />
+        <label for="database-name">Wallet database name (change for a fresh wallet)</label>
+        <input id="database-name" type="text" placeholder="credo-demo-wallet" />
+        <button type="button" id="init-button">Create / open wallet</button>
+        <p>My DID: <code id="my-did" class="mono"></code></p>
+      </section>
+
+      <section class="card hidden" id="invitation-card">
+        <h2>Receive invitation</h2>
+        <label for="invitation-url">Out-of-band invitation URL</label>
+        <textarea id="invitation-url" rows="3" placeholder="https://agent.example.com?oob=... or ?c_i=..."></textarea>
+        <button type="button" id="receive-invitation-button">Receive invitation</button>
+      </section>
+
+      <section class="card hidden" id="connections-card">
+        <h2>Connections</h2>
+        <ul id="connections-list" class="records"></ul>
+        <div class="row">
+          <select id="message-connection"></select>
+          <input id="message-text" type="text" placeholder="Basic message" />
+          <button type="button" id="send-message-button">Send</button>
+        </div>
+      </section>
+
+      <section class="card hidden" id="credentials-card">
+        <h2>Credential exchanges</h2>
+        <ul id="credentials-list" class="records"></ul>
+        <h3>Stored credentials</h3>
+        <ul id="stored-credentials-list" class="records"></ul>
+      </section>
+
+      <section class="card hidden" id="proofs-card">
+        <h2>Proof exchanges</h2>
+        <ul id="proofs-list" class="records"></ul>
+      </section>
+
+      <section class="card">
+        <h2>Event log</h2>
+        <pre id="log"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="./src/wallet.ts"></script>
+  </body>
+</html>
