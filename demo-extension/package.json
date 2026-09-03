@@ -13,7 +13,8 @@
     "bundle": "vite build",
     "dev": "vite",
     "check": "tsc --noEmit",
-    "local-agent": "vitest run --config e2e/vitest.config.ts"
+    "local-agent": "vitest run --config e2e/vitest.config.ts",
+    "indy-vdr-proxy": "vite-node e2e/indy-vdr-proxy.ts"
   },
   "dependencies": {
     "@credo-ts/anoncreds": "workspace:*",

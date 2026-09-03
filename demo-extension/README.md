@@ -18,6 +18,12 @@ The indy-vdr-proxy base url defaults to `http://localhost:8080` and can be chang
 
 `pnpm local-agent` starts a Node issuer/verifier agent with a WS inbound transport, a control HTTP API on `http://localhost:9202` to drive flows (invitation, basic messages, JSON-LD and AnonCreds offers, PEX and AnonCreds proof requests) and a fake indy-vdr-proxy on port 8080 backed by its in-memory AnonCreds registry. See `e2e/local-agent.ts` for the endpoints.
 
+## Real ledger proxy
+
+The fake proxy above only knows the objects the local agent created. To accept credentials from a real issuer, run `pnpm indy-vdr-proxy` instead. It opens a pool against the BCovrin test ledger and serves the same routes on `http://localhost:8081`, so point the wallet's proxy base url there (port 8081, not 8080).
+
+Genesis is fetched from `http://test.bcovrin.vonx.io/genesis` at startup. Override with `INDY_VDR_PROXY_GENESIS_URL`, `INDY_VDR_PROXY_GENESIS_FILE` (fallback when the fetch fails) and `INDY_VDR_PROXY_PORT`.
+
 ## Build
 
 ```

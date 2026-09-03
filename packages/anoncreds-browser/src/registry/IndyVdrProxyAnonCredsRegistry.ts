@@ -164,7 +164,7 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
           schemaId,
           resolutionMetadata: {
             error: 'notFound',
-            message: `unable to find schema with id ${schemaId}`,
+            message: `unable to find schema with id ${schemaId} on indy-vdr-proxy ${this.baseUrl(namespace)}`,
           },
           schemaMetadata: {},
         }
@@ -215,9 +215,7 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
       )
       const result = response.result
 
-      const schema = result?.data ? await this.fetchIndySchemaWithSeqNo(agentContext, namespace, result.ref) : undefined
-
-      if (!result?.data || !schema) {
+      const notFound = (): GetCredentialDefinitionReturn => {
         agentContext.config.logger.error(
           `Credential definition '${credentialDefinitionId}' not found on proxied ledger`
         )
@@ -226,10 +224,15 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
           credentialDefinitionMetadata: {},
           resolutionMetadata: {
             error: 'notFound',
-            message: `unable to resolve credential definition with id ${credentialDefinitionId}`,
+            message: `unable to resolve credential definition with id ${credentialDefinitionId} on indy-vdr-proxy ${this.baseUrl(namespace)}`,
           },
         }
       }
+
+      if (!result?.data || !('primary' in result.data)) return notFound()
+
+      const schema = await this.fetchIndySchemaWithSeqNo(agentContext, namespace, result.ref)
+      if (!schema) return notFound()
 
       const schemaId = credentialDefinitionId.startsWith('did:indy:')
         ? // namespace is always defined for did:indy identifiers
@@ -290,7 +293,7 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
       )
       const result = response.result
 
-      if (!result?.data) {
+      if (!result?.data || !('value' in result.data)) {
         agentContext.config.logger.error(
           `Revocation registry definition '${revocationRegistryDefinitionId}' not found on proxied ledger`
         )
@@ -299,7 +302,7 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
           revocationRegistryDefinitionMetadata: {},
           resolutionMetadata: {
             error: 'notFound',
-            message: `unable to resolve revocation registry definition with id ${revocationRegistryDefinitionId}`,
+            message: `unable to resolve revocation registry definition with id ${revocationRegistryDefinitionId} on indy-vdr-proxy ${this.baseUrl(namespace)}`,
           },
         }
       }
@@ -388,7 +391,7 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
       )
       const result = response.result
 
-      if (result?.type !== '117' || !result?.data || !result?.txnTime) {
+      if (result?.type !== '117' || !result?.data?.value?.accum_to || !result?.txnTime) {
         agentContext.config.logger.error(
           `Error retrieving revocation registry delta '${revocationRegistryId}' from proxied ledger, potentially revocation interval ends before revocation registry creation`
         )
@@ -521,17 +524,18 @@ export class IndyVdrProxyAnonCredsRegistry implements AnonCredsRegistry {
   ): Promise<{ schemaDid: string; name: string; version: string } | undefined> {
     const response = await this.get(agentContext, `${this.baseUrl(namespace)}/txn/DOMAIN/${seqNo}`)
     const data = response.result?.data
+    const schema = data?.txn?.data?.data
 
     // '101' is the transaction type for schemas
-    if (data?.txn?.type !== '101') {
+    if (data?.txn?.type !== '101' || !data.txn.metadata?.from || !schema?.name || !schema.version) {
       agentContext.config.logger.error(`Could not get schema from ledger for seq no ${seqNo}`)
       return undefined
     }
 
     return {
       schemaDid: data.txn.metadata.from,
-      name: data.txn.data.data.name,
-      version: data.txn.data.data.version,
+      name: schema.name,
+      version: schema.version,
     }
   }
 }
