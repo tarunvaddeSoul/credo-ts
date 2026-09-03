@@ -14,9 +14,14 @@
  *     POST /offer-anoncreds                -> offer an AnonCreds credential
  *     POST /request-proof-pex              -> request a DIF PEX proof of the JSON-LD credential
  *     POST /request-proof-anoncreds        -> request an AnonCreds proof (name + age >= 18)
+ *     GET  /invitation-with-offer          -> invitation with an AnonCreds offer attached (platform "Receive" button)
+ *     GET  /invitation-with-proof-request  -> invitation with an AnonCreds proof request attached (platform "Verify" button)
+ *     GET  /exchange?id=...                -> state of one credential or proof exchange
+ *     GET  /platform                       -> demo issuance/verification platform page using the extension provider
  * - a fake indy-vdr-proxy on http://localhost:8080 serving the AnonCreds objects this agent
  *   registers in its in-memory registry, so the browser wallet can resolve them
  */
+import { readFileSync } from 'node:fs'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import type { AnonCredsCredentialDefinition, AnonCredsSchema } from '@credo-ts/anoncreds'
 import {
@@ -196,12 +201,86 @@ async function requireConnectionId(): Promise<string> {
 
 async function handleControl(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url ?? '/', `http://localhost:${CONTROL_PORT}`)
+  // Lets tests target a specific wallet when several are connected
+  const connectionOverride = url.searchParams.get('connectionId')
+  if (connectionOverride) lastConnectionId = connectionOverride
 
   try {
     if (url.pathname === '/invitation') {
       const { outOfBandInvitation } = await agent.didcomm.oob.createInvitation({ label: 'Local Issuer' })
       res.writeHead(200, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' })
       res.end(outOfBandInvitation.toUrl({ domain: `http://localhost:${CONTROL_PORT}/invitation` }))
+      return
+    }
+
+    if (url.pathname === '/invitation-with-offer') {
+      const { message, credentialExchangeRecord } = await agent.didcomm.credentials.createOffer({
+        protocolVersion: 'v2',
+        comment: 'SSW demo anoncreds credential',
+        credentialFormats: {
+          anoncreds: {
+            credentialDefinitionId,
+            attributes: [
+              { name: 'name', value: url.searchParams.get('name') ?? 'Tarun' },
+              { name: 'age', value: url.searchParams.get('age') ?? '28' },
+            ],
+          },
+        },
+      })
+      const { outOfBandInvitation } = await agent.didcomm.oob.createInvitation({
+        label: 'Local Issuer',
+        messages: [message],
+      })
+      return sendJson(res, 200, {
+        invitationUrl: outOfBandInvitation.toUrl({ domain: `http://localhost:${CONTROL_PORT}/invitation` }),
+        credentialExchangeId: credentialExchangeRecord.id,
+      })
+    }
+
+    if (url.pathname === '/invitation-with-proof-request') {
+      const { message, proofRecord } = await agent.didcomm.proofs.createRequest({
+        protocolVersion: 'v2',
+        proofFormats: {
+          anoncreds: {
+            name: 'SSW Demo Proof',
+            version: '1.0',
+            requested_attributes: {
+              name: { name: 'name', restrictions: [{ cred_def_id: credentialDefinitionId }] },
+            },
+            requested_predicates: {
+              age: { name: 'age', p_type: '>=', p_value: 18, restrictions: [{ cred_def_id: credentialDefinitionId }] },
+            },
+          },
+        },
+      })
+      const { outOfBandInvitation } = await agent.didcomm.oob.createInvitation({
+        label: 'Local Verifier',
+        messages: [message],
+      })
+      return sendJson(res, 200, {
+        invitationUrl: outOfBandInvitation.toUrl({ domain: `http://localhost:${CONTROL_PORT}/invitation` }),
+        proofExchangeId: proofRecord.id,
+      })
+    }
+
+    if (url.pathname === '/exchange') {
+      const id = url.searchParams.get('id')
+      if (!id) return sendJson(res, 400, { error: 'id query parameter is required' })
+      // The in-memory storage's findById ignores the record class, getAll does not
+      const proof = (await agent.didcomm.proofs.getAll()).find((record) => record.id === id)
+      const credential = proof ? undefined : (await agent.didcomm.credentials.getAll()).find((record) => record.id === id)
+      if (!proof && !credential) return sendJson(res, 404, { error: 'unknown exchange id' })
+      return sendJson(res, 200, {
+        id,
+        kind: proof ? 'proof' : 'credential',
+        state: proof?.state ?? credential?.state,
+        isVerified: proof?.isVerified,
+      })
+    }
+
+    if (url.pathname === '/platform') {
+      res.writeHead(200, { 'Content-Type': 'text/html' })
+      res.end(readFileSync(new URL('./platform.html', import.meta.url), 'utf8'))
       return
     }
 
